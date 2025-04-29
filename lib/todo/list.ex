@@ -28,7 +28,9 @@ defmodule Todo.List do
         todo_list
 
       {:ok, old_entry} ->
+        IO.inspect(old_entry)
         new_entry = updater_fun.(old_entry)
+        IO.inspect(new_entry)
         new_entries = Map.put(todo_list.entries, new_entry.id, new_entry)
         %Todo.List{todo_list | entries: new_entries}
     end
