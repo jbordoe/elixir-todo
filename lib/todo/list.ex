@@ -1,4 +1,7 @@
 defmodule Todo.List do
+  @moduledoc """
+  A todo list.
+  """
   defstruct next_id: 1, entries: %{}
 
   def new(entries \\ []) do

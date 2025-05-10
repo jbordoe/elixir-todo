@@ -1,20 +1,25 @@
-defmodule Todo.ServerProcess do
+defmodule ServerProcess do
   @moduledoc """
   A generic server process.
   """
   def start(callback_module) do
     spawn(fn ->
-      inital_state = callback_module.init
+      inital_state = callback_module.init()
       loop(callback_module, inital_state)
     end)
   end
 
   def call(server_pid, request) do
-    send(server_pid, {request, self()})
+    send(server_pid, {:call, request, self()})
     receive do
       {:response, response} -> response
     end
   end
+
+  def cast(server_pid, request) do
+    send(server_pid, {:cast, request})
+  end
+
 
   defp loop(callback_module, state) do
     receive do
