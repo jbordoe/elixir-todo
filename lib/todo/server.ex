@@ -4,27 +4,25 @@ defmodule Todo.Server do
   """
   use GenServer
 
-  @process_name :todo_server
-
   ## Interface Functions
   def start do
-    GenServer.start(Todo.Server, [], name: @process_name)
+    GenServer.start(Todo.Server, [])
   end
 
-  def add_entry(new_entry) do
-    GenServer.cast(@process_name, {:add_entry, new_entry})
+  def add_entry(server_pid, new_entry) do
+    GenServer.cast(server_pid, {:add_entry, new_entry})
   end
 
-  def delete_entry(entry_id) do
-    GenServer.cast(@process_name, {:delete_entry, entry_id})
+  def delete_entry(server_pid, entry_id) do
+    GenServer.cast(server_pid, {:delete_entry, entry_id})
   end
 
-  def update_entry(entry_id, updater_fun) do
-    GenServer.cast(@process_name, {:update_entry, entry_id, updater_fun})
+  def update_entry(server_pid, entry_id, updater_fun) do
+    GenServer.cast(server_pid, {:update_entry, entry_id, updater_fun})
   end
 
-  def entries(date) do
-    GenServer.call(@process_name, {:entries, date})
+  def entries(server_pid, date) do
+    GenServer.call(server_pid, {:entries, date})
   end
 
   ## Callbacks
