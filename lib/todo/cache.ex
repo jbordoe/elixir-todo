@@ -20,6 +20,7 @@ defmodule Todo.Cache do
   end
 
   def init(_) do
+    Todo.Database.start("./persist")
     {:ok, Map.new()}
   end
 

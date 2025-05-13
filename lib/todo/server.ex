@@ -26,20 +26,26 @@ defmodule Todo.Server do
   end
 
   ## Callbacks
-  def init(todo_list_name), do: {:ok, %Todo.List{name: todo_list_name}}
+  def init(todo_list_name) do
+    send(self(), {:real_init, todo_list_name})
+    {:ok, nil}
+  end
 
   def handle_cast({:add_entry, new_entry}, todo_list) do
     new_state = Todo.List.add_entry(todo_list, new_entry)
+    persist(new_state)
     {:noreply, new_state}
   end
 
   def handle_cast({:delete_entry, entry_id}, todo_list) do
     new_state = Todo.List.delete_entry(todo_list, entry_id)
+    persist(new_state)
     {:noreply, new_state}
   end
 
   def handle_cast({:update_entry, entry_id, updater_fun}, todo_list) do
     new_state = Todo.List.update_entry(todo_list, entry_id, updater_fun)
+    persist(new_state)
     {:noreply, new_state}
   end
 
@@ -48,6 +54,15 @@ defmodule Todo.Server do
     {:reply, entries, todo_list}
   end
 
+  def handle_info({:real_init, todo_list_name}, _state) do
+    todo_list = Todo.Database.get(todo_list_name) || %Todo.List{name: todo_list_name}
+    {:noreply, todo_list}
+  end
+
   # TODO: log unsupported messages
   def handle_info(_, state), do: {:noreply, state}
+
+  defp persist(todo_list) do
+    Todo.Database.store(todo_list.name, todo_list)
+  end
 end
