@@ -5,6 +5,7 @@ defmodule Todo.Database do
   use GenServer
 
   @process_name :todo_database
+  @worker_pool_size 3
 
   ## Interface Functions
   def start(db_folder) do
@@ -25,22 +26,28 @@ defmodule Todo.Database do
 
   def init(db_folder) do
     File.mkdir_p(db_folder)
-    {:ok, db_folder}
+    worker_pids = 1..@worker_pool_size
+      |> Enum.map(fn _ ->
+        {:ok, pid} = Todo.Database.Worker.start(db_folder)
+        pid
+      end)
+    {:ok, worker_pids}
   end
 
-  def handle_cast({:store, key, value}, db_folder) do
-    Path.join(db_folder, key)
-    |> File.write!(:erlang.term_to_binary(value))
-
-    {:noreply, db_folder}
+  def handle_cast({:store, key, value}, worker_pids) do
+    get_worker_pid(key, worker_pids)
+    |> Todo.Database.Worker.store(key, value)
+    {:noreply, worker_pids}
   end
 
-  def handle_call({:get, key}, _caller, db_folder) do
-    data = case File.read(Path.join(db_folder, key)) do
-      {:ok, binary} -> :erlang.binary_to_term(binary)
-      _ -> nil
-    end
+  def handle_call({:get, key}, _caller, worker_pids) do
+    data = get_worker_pid(key, worker_pids)
+    |> Todo.Database.Worker.get(key)
 
-    {:reply, data, db_folder}
+    {:reply, data, worker_pids}
+  end
+
+  defp get_worker_pid(key, worker_pids) do
+    Enum.at(worker_pids, :erlang.phash2(key, @worker_pool_size))
   end
 end
