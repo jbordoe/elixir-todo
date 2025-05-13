@@ -42,7 +42,7 @@ defmodule Todo.Server do
     Todo.List.update_entry(todo_list, entry_id, updater_fun)
   end
 
-  def handle_call({:entries, caller, date}, todo_list) do
+  def handle_call({:entries, _caller, date}, todo_list) do
     entries = Todo.List.entries(todo_list, date)
     {entries, todo_list}
   end
