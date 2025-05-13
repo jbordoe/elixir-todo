@@ -4,7 +4,7 @@ defmodule Todo.ServerTest do
   @todo_server_name :test_todo_server
   setup do
     # Start a fresh Todo.Server for each test
-    {:ok, pid} = Todo.Server.start()
+    {:ok, pid} = Todo.Server.start("foo")
     Process.register(pid, @todo_server_name)
 
     on_exit(fn ->
@@ -111,7 +111,7 @@ defmodule Todo.ServerTest do
     :timer.sleep(10)
     
     # Restart the server
-    {:ok, new_pid} = Todo.Server.start()
+    {:ok, new_pid} = Todo.Server.start("foo")
     
     # Verify the entry doesn't exist anymore (no persistence)
     assert Todo.Server.entries(new_pid, ~D[2025-05-13]) == []

@@ -28,7 +28,7 @@ defmodule Todo.Cache do
       {:ok, todo_server} ->
         {:reply, todo_server, todo_servers}
       :error ->
-        {:ok, todo_server} = Todo.Server.start()
+        {:ok, todo_server} = Todo.Server.start(todo_list_name)
         todo_servers = Map.put(todo_servers, todo_list_name, todo_server)
         {:reply, todo_server, todo_servers}
     end

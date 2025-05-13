@@ -2,7 +2,7 @@ defmodule Todo.List do
   @moduledoc """
   A todo list.
   """
-  defstruct next_id: 1, entries: %{}
+  defstruct next_id: 1, entries: %{}, name: nil
 
   def new(entries \\ []) do
     Enum.reduce(

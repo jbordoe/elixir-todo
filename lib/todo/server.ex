@@ -5,8 +5,8 @@ defmodule Todo.Server do
   use GenServer
 
   ## Interface Functions
-  def start do
-    GenServer.start(Todo.Server, [])
+  def start(todo_list_name) do
+    GenServer.start(Todo.Server, [todo_list_name], [])
   end
 
   def add_entry(server_pid, new_entry) do
@@ -26,7 +26,7 @@ defmodule Todo.Server do
   end
 
   ## Callbacks
-  def init(_), do: {:ok, Todo.List.new()}
+  def init(todo_list_name), do: {:ok, %Todo.List{name: todo_list_name}}
 
   def handle_cast({:add_entry, new_entry}, todo_list) do
     new_state = Todo.List.add_entry(todo_list, new_entry)
