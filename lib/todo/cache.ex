@@ -7,12 +7,9 @@ defmodule Todo.Cache do
   @process_name :todo_cache
 
   ## Interface Functions
-  def start do
-    GenServer.start(
-      __MODULE__,
-      [],
-      name: @process_name
-    )
+  def start_link do
+    IO.puts("Starting the to-do cache process...")
+    GenServer.start_link(__MODULE__, nil, name: @process_name)
   end
 
   def server_process(todo_list_name) do
@@ -20,7 +17,7 @@ defmodule Todo.Cache do
   end
 
   def init(_) do
-    Todo.Database.start("./persist")
+    Todo.Database.start_link("./persist")
     {:ok, Map.new()}
   end
 

@@ -8,12 +8,9 @@ defmodule Todo.Database do
   @worker_pool_size 3
 
   ## Interface Functions
-  def start(db_folder) do
-    GenServer.start(
-      __MODULE__,
-      db_folder,
-      name: @process_name
-    )
+  def start_link(db_folder) do
+    IO.puts("Starting the to-do database server...")
+    GenServer.start_link(__MODULE__, db_folder, name: @process_name)
   end
 
   def store(key, value) do
@@ -28,7 +25,7 @@ defmodule Todo.Database do
     File.mkdir_p(db_folder)
     worker_pids = 1..@worker_pool_size
       |> Enum.map(fn _ ->
-        {:ok, pid} = Todo.Database.Worker.start(db_folder)
+        {:ok, pid} = Todo.Database.Worker.start_link(db_folder)
         pid
       end)
     {:ok, worker_pids}
