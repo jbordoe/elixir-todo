@@ -2,15 +2,20 @@ defmodule Todo.ServerTest do
   use ExUnit.Case
 
   @todo_server_name :test_todo_server
+
   setup do
+    # Start a fresh Todo.Database for each test
+    tmp_dir = Path.join(System.tmp_dir!(), "todo_test")
+    {:ok, _db_pid} = Todo.Database.start_link(tmp_dir)
     # Start a fresh Todo.Server for each test
-    {:ok, pid} = Todo.Server.start("foo")
+    {:ok, pid} = Todo.Server.start_link("foo")
     Process.register(pid, @todo_server_name)
 
     on_exit(fn ->
       # Stop the server
       pid = Process.whereis(@todo_server_name)
       if pid, do: Process.exit(pid, :kill)
+      File.rm_rf!(tmp_dir)
     end)
 
     :ok
@@ -96,25 +101,27 @@ defmodule Todo.ServerTest do
     assert length(updated_entries) == 2
   end
   
-  test "server restart preserves no data" do
+  test "server restart preserves" do
+    entry = %{date: ~D[2025-05-13], title: "Test entry"}
     # Add some entries
-    Todo.Server.add_entry(@todo_server_name, %{date: ~D[2025-05-13], title: "Test entry"})
+    Todo.Server.add_entry(@todo_server_name, entry)
     
     # Verify the entry exists
     assert length(Todo.Server.entries(@todo_server_name, ~D[2025-05-13])) == 1
+    old_entries = Todo.Server.entries(@todo_server_name, ~D[2025-05-13])
     
     # Stop and restart the server
     pid = Process.whereis(@todo_server_name)
-    Process.exit(pid, :kill)
+    Process.exit(pid, :normal)
     
     # Wait briefly to ensure the process is terminated
     :timer.sleep(10)
     
     # Restart the server
-    {:ok, new_pid} = Todo.Server.start("foo")
+    {:ok, new_pid} = Todo.Server.start_link("foo")
     
     # Verify the entry doesn't exist anymore (no persistence)
-    assert Todo.Server.entries(new_pid, ~D[2025-05-13]) == []
+    assert Todo.Server.entries(new_pid, ~D[2025-05-13]) == old_entries
   end
   
   test "concurrent operations work correctly" do
