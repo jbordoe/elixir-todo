@@ -36,7 +36,7 @@ defmodule Todo.ProcessRegistry do
     end
   end
 
-  def handle_call({:register_name, key, process_pid}, process_registry) do
+  def handle_call({:register_name, key, process_pid}, _caller, process_registry) do
     case Map.get(process_registry, key) do
       nil ->
         Process.monitor(process_pid)
