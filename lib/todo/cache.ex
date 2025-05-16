@@ -13,7 +13,10 @@ defmodule Todo.Cache do
   end
 
   def server_process(todo_list_name) do
-    GenServer.call(@process_name, {:server_process, todo_list_name})
+    # Prevent race conditions by checking if the server process exists
+    unless Todo.Server.whereis(todo_list_name) do
+      GenServer.call(@process_name, {:server_process, todo_list_name})
+    end
   end
 
   def init(_) do
@@ -22,6 +25,7 @@ defmodule Todo.Cache do
   end
 
   def handle_call({:server_process, todo_list_name}, _, todo_servers) do
+    # check if the server process exists
     case Map.fetch(todo_servers, todo_list_name) do
       {:ok, todo_server} ->
         {:reply, todo_server, todo_servers}

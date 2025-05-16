@@ -119,7 +119,7 @@ defmodule Todo.ServerTest do
     :timer.sleep(10)
     
     # Restart the server
-    {:ok, new_pid} = Todo.Server.start_link("foo")
+    new_pid = Process.whereis(@todo_server_name)
     
     # Verify the entry doesn't exist anymore (no persistence)
     assert Todo.Server.entries(new_pid, ~D[2025-05-13]) == old_entries
