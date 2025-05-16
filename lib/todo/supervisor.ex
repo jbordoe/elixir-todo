@@ -17,24 +17,12 @@ defmodule Todo.Supervisor do
         type: :worker
       },
       %{
-        id: Todo.Database.PoolSupervisor,
-        start: {Todo.Database.PoolSupervisor, :start_link, ["./persist", 3]},
+        id: Todo.SystemSupervisor,
+        start: {Todo.SystemSupervisor, :start_link, []},
         restart: :permanent,
         type: :supervisor
-      },
-      %{
-        id: Todo.ServerSupervisor,
-        start: {Todo.ServerSupervisor, :start_link, []},
-        restart: :permanent,
-        type: :supervisor
-      },
-      %{
-        id: Todo.Cache,
-        start: {Todo.Cache, :start_link, []},
-        restart: :permanent,
-        type: :worker
       }
     ]
-    Supervisor.init(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :rest_for_one)
   end
 end

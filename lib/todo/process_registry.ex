@@ -36,6 +36,11 @@ defmodule Todo.ProcessRegistry do
     end
   end
 
+  def debug do
+    GenServer.call(__MODULE__, {:debug})
+    |> IO.inspect
+  end
+
   def handle_call({:register_name, key, process_pid}, _caller, process_registry) do
     case Map.get(process_registry, key) do
       nil ->
@@ -53,6 +58,10 @@ defmodule Todo.ProcessRegistry do
       Map.get(process_registry, key, :undefined),
       process_registry
     }
+  end
+
+  def handle_call({:debug}, _caller, process_registry) do
+    {:reply, process_registry, process_registry}
   end
 
   def handle_cast({:unregister_name, key}, process_registry) do
