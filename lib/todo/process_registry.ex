@@ -65,7 +65,7 @@ defmodule Todo.ProcessRegistry do
   end
 
   def handle_cast({:unregister_name, key}, process_registry) do
-    {:noreply, deregister_pid(process_registry, key)}
+    {:noreply, deregister_name(process_registry, key)}
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, process_registry) do
@@ -73,7 +73,11 @@ defmodule Todo.ProcessRegistry do
     {:noreply, deregister_pid(process_registry, pid)}
     # TODO: log process down
   end
-  
+
+  defp deregister_name(process_registry, key) do
+    Map.delete(process_registry, key)
+  end
+
   defp deregister_pid(process_registry, pid) do
     IO.puts("Deregistering process: #{inspect(pid)}")
     process_registry
