@@ -2,27 +2,26 @@ defmodule Todo.ServerSupervisor do
   @moduledoc """
   The supervisor process for the todo application.
   """
-  use Supervisor
-
-  @supervisor_alias :todo_server_supervisor
+  use DynamicSupervisor
 
   def start_link do
-    Supervisor.start_link(__MODULE__, nil, name: @supervisor_alias)
+    DynamicSupervisor.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
   def start_child(todo_list_name) do
-    Supervisor.start_child(@supervisor_alias, [todo_list_name])
+    DynamicSupervisor.start_child(__MODULE__, child_spec(todo_list_name))
   end
 
   def init(_) do
-    children = [
-      %{
-        id: Todo.Server,
-        start: {Todo.Server, :start_link, []},
-        restart: :permanent,
-        type: :worker
-      }
-    ]
-    Supervisor.init(children, strategy: :one_for_one)
+    DynamicSupervisor.init(strategy: :one_for_one)
+  end
+
+  defp child_spec(todo_list_name) do
+    %{
+      id: Todo.Server,
+      start: {Todo.Server, :start_link, [todo_list_name]},
+      restart: :permanent,
+      type: :worker
+    }
   end
 end

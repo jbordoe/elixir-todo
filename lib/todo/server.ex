@@ -6,7 +6,7 @@ defmodule Todo.Server do
 
   ## Interface Functions
   def start_link(todo_list_name) do
-    IO.puts("Starting server for #{todo_list_name}")
+    IO.puts("Starting todo server for #{todo_list_name}")
     GenServer.start_link(Todo.Server, [todo_list_name], name: via_tuple(todo_list_name))
   end
 
@@ -27,7 +27,7 @@ defmodule Todo.Server do
   end
 
   def whereis(todo_list_name) do
-    Todo.ProcessRegistry.whereis_name(Todo.Server, todo_list_name)
+    Todo.ProcessRegistry.whereis_name({Todo.Server, todo_list_name})
   end
 
   ## Callbacks
@@ -63,9 +63,6 @@ defmodule Todo.Server do
     todo_list = Todo.Database.get(todo_list_name) || %Todo.List{name: todo_list_name}
     {:noreply, todo_list}
   end
-
-  # TODO: log unsupported messages
-  def handle_info(_, state), do: {:noreply, state}
 
   defp via_tuple(todo_list_name) do
     {:via, Todo.ProcessRegistry, {Todo.Server, todo_list_name}}

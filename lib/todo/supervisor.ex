@@ -17,8 +17,8 @@ defmodule Todo.Supervisor do
         type: :worker
       },
       %{
-        id: Todo.Database,
-        start: {Todo.Database, :start_link, ["./persist"]},
+        id: Todo.Database.PoolSupervisor,
+        start: {Todo.Database.PoolSupervisor, :start_link, ["./persist", 3]},
         restart: :permanent,
         type: :supervisor
       },

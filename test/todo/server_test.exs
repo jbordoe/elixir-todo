@@ -7,7 +7,7 @@ defmodule Todo.ServerTest do
     Todo.ProcessRegistry.start_link()
     # Start a fresh Todo.Database for each test
     tmp_dir = Path.join(System.tmp_dir!(), "todo_test")
-    {:ok, _db_pid} = Todo.Database.start_link(tmp_dir)
+    {:ok, db_pid} = Todo.Database.PoolSupervisor.start_link(tmp_dir, 3)
     # Start a fresh Todo.Server for each test
     {:ok, pid} = Todo.Server.start_link("foo")
     Process.register(pid, @todo_server_name)
@@ -17,6 +17,7 @@ defmodule Todo.ServerTest do
       pid = Process.whereis(@todo_server_name)
       if pid, do: Process.exit(pid, :kill)
       File.rm_rf!(tmp_dir)
+      Process.exit(db_pid, :kill)
     end)
 
     :ok
