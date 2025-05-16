@@ -60,11 +60,15 @@ defmodule Todo.ProcessRegistry do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, process_registry) do
+    IO.puts("Process down: #{inspect(pid)}")
     {:noreply, deregister_pid(process_registry, pid)}
     # TODO: log process down
   end
   
-  defp deregister_pid(process_registry, key) do
-    Map.delete(process_registry, key)
+  defp deregister_pid(process_registry, pid) do
+    IO.puts("Deregistering process: #{inspect(pid)}")
+    process_registry
+      |> Enum.reject(fn {_, value} -> value == pid end)
+      |> Map.new()
   end
 end
