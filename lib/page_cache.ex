@@ -8,7 +8,7 @@ defmodule PageCache do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
-  def cache(key, func) do
+  def cached(key, func) do
     GenServer.call(__MODULE__, {:cache, key, func})
   end
 
