@@ -25,6 +25,7 @@ defmodule Todo.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:gproc, "~> 1.0"},
       {:mock, "~> 0.3.9", only: :test},
+      {:jason, "~> 1.4"},
       {:cowboy, "~> 2.13"},
       {:plug_cowboy, "~> 2.5"},
       {:plug, "~> 1.17"},
