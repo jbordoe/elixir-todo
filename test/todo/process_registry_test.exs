@@ -3,6 +3,11 @@ defmodule Todo.ProcessRegistryTest do
   alias Todo.ProcessRegistry
 
   setup do
+    # Stop the application if it's already running
+    :application.stop(:todo)
+    # Ensure the application won't auto-start by setting the flag
+    :ok = :application.set_env(:todo, :start_immediately, false)
+
     # Start a fresh ProcessRegistry for each test
     {:ok, registry} = ProcessRegistry.start_link()
 
