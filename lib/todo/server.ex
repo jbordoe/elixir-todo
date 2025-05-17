@@ -7,7 +7,11 @@ defmodule Todo.Server do
   ## Interface Functions
   def start_link(todo_list_name) do
     IO.puts("Starting todo server for #{todo_list_name}")
-    GenServer.start_link(Todo.Server, [todo_list_name], name: via_tuple(todo_list_name))
+    GenServer.start_link(
+      Todo.Server,
+      [todo_list_name],
+      name: {:global, {__MODULE__, todo_list_name}}
+    )
   end
 
   def add_entry(server_pid, new_entry) do
@@ -27,7 +31,7 @@ defmodule Todo.Server do
   end
 
   def whereis(todo_list_name) do
-    :gproc.whereis_name({:n, :l, {__MODULE__, todo_list_name}})
+    :global.whereis_name({__MODULE__, todo_list_name})
   end
 
   ## Callbacks
@@ -62,10 +66,6 @@ defmodule Todo.Server do
   def handle_info({:real_init, todo_list_name}, _state) do
     todo_list = Todo.Database.get(todo_list_name) || %Todo.List{name: todo_list_name}
     {:noreply, todo_list}
-  end
-
-  defp via_tuple(todo_list_name) do
-    {:via, :gproc, {:n, :l, {__MODULE__, todo_list_name}}}
   end
 
   defp persist(todo_list) do

@@ -22,12 +22,6 @@ defmodule Todo.SystemSupervisor do
         restart: :permanent,
         type: :supervisor
       },
-      %{
-        id: Todo.Cache,
-        start: {Todo.Cache, :start_link, []},
-        restart: :permanent,
-        type: :worker
-      }
     ]
     Supervisor.init(children, strategy: :one_for_one)
   end
