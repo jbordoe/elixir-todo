@@ -23,6 +23,7 @@ defmodule Todo.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:gproc, "~> 1.0"},
       {:mock, "~> 0.3.9", only: :test}
     ]
   end
