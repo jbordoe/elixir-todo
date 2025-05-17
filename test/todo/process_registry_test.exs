@@ -53,6 +53,8 @@ defmodule Todo.ProcessRegistryTest do
       
       # Unregister
       ProcessRegistry.unregister_name(:test_process)
+      # Sleep to allow the process to unregister
+      :timer.sleep(100)
       assert :undefined == ProcessRegistry.whereis_name(:test_process)
     end
 

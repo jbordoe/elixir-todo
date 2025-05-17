@@ -5,6 +5,8 @@ defmodule Todo.ProcessRegistry do
   use GenServer
   import Kernel, except: [send: 2]
 
+  @ets_table_name :todo_process_registry
+
   def start_link do
     IO.puts("Starting the to-do process registry...")
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
@@ -19,11 +21,15 @@ defmodule Todo.ProcessRegistry do
   end
 
   def whereis_name(key) do
-    GenServer.call(__MODULE__, {:whereis_name, key})
+    case :ets.lookup(@ets_table_name, key) do
+      [{^key, pid}] -> pid
+      _ -> :undefined
+    end
   end
 
   def init(_) do
-    {:ok, Map.new()}
+    :ets.new(@ets_table_name, [:set, :protected, :named_table])
+    {:ok, nil}
   end
 
   def send(key, message) do
@@ -37,51 +43,40 @@ defmodule Todo.ProcessRegistry do
   end
 
   def debug do
-    GenServer.call(__MODULE__, {:debug})
-    |> IO.inspect
+    :ets.tab2list(@ets_table_name) |> Map.new() |> IO.inspect()
   end
 
-  def handle_call({:register_name, key, process_pid}, _caller, process_registry) do
-    case Map.get(process_registry, key) do
-      nil ->
+  def handle_call({:register_name, key, process_pid}, _caller, state) do
+    case whereis_name(key) do
+      :undefined ->
         Process.monitor(process_pid)
-        {:reply, :yes, Map.put(process_registry, key, process_pid)}
+        add_to_registry(key, process_pid)
+        {:reply, :yes, state}
       _ ->
-        {:reply, :no, process_registry}
+        {:reply, :no, state}
         # TODO: log duplicate registration
     end 
   end
 
-  def handle_call({:whereis_name, key}, _caller, process_registry) do
-    {
-      :reply,
-      Map.get(process_registry, key, :undefined),
-      process_registry
-    }
+  def handle_cast({:unregister_name, key}, _state) do
+    {:noreply, deregister_name(key)}
   end
 
-  def handle_call({:debug}, _caller, process_registry) do
-    {:reply, process_registry, process_registry}
-  end
-
-  def handle_cast({:unregister_name, key}, process_registry) do
-    {:noreply, deregister_name(process_registry, key)}
-  end
-
-  def handle_info({:DOWN, _ref, :process, pid, _reason}, process_registry) do
+  def handle_info({:DOWN, _ref, :process, pid, _reason}, _state) do
     IO.puts("Process down: #{inspect(pid)}")
-    {:noreply, deregister_pid(process_registry, pid)}
-    # TODO: log process down
+    {:noreply, deregister_pid(pid)}
   end
 
-  defp deregister_name(process_registry, key) do
-    Map.delete(process_registry, key)
+  defp add_to_registry(key, process_pid) do
+    :ets.insert(@ets_table_name, {key, process_pid})
   end
 
-  defp deregister_pid(process_registry, pid) do
+  defp deregister_name(key) do
+    :ets.delete(@ets_table_name, key)
+  end
+
+  defp deregister_pid(pid) do
     IO.puts("Deregistering process: #{inspect(pid)}")
-    process_registry
-      |> Enum.reject(fn {_, value} -> value == pid end)
-      |> Map.new()
+    :ets.match_delete(@ets_table_name, {:_, pid})
   end
 end
