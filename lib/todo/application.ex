@@ -6,7 +6,8 @@ defmodule Todo.Application do
 
   def start(_type, _args) do
     IO.puts("Starting the to-do application...")
-    Todo.Supervisor.start_link()
+    response = Todo.Supervisor.start_link()
+    Todo.Web.start_server()
+    response
   end
-  
 end
