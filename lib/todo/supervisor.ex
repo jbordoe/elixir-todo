@@ -11,12 +11,6 @@ defmodule Todo.Supervisor do
   def init(_) do
     children = [
       %{
-        id: Todo.ProcessRegistry,
-        start: {Todo.ProcessRegistry, :start_link, []},
-        restart: :permanent,
-        type: :worker
-      },
-      %{
         id: Todo.SystemSupervisor,
         start: {Todo.SystemSupervisor, :start_link, []},
         restart: :permanent,

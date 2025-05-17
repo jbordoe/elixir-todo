@@ -4,7 +4,6 @@ defmodule Todo.ServerTest do
   @todo_server_name :test_todo_server
 
   setup do
-    Todo.ProcessRegistry.start_link()
     # Start a fresh Todo.Database for each test
     tmp_dir = Path.join(System.tmp_dir!(), "todo_test")
     {:ok, db_pid} = Todo.Database.PoolSupervisor.start_link(tmp_dir, 3)

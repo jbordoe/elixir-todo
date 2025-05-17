@@ -27,7 +27,7 @@ defmodule Todo.Server do
   end
 
   def whereis(todo_list_name) do
-    Todo.ProcessRegistry.whereis_name({Todo.Server, todo_list_name})
+    :gproc.whereis_name({:n, :l, {__MODULE__, todo_list_name}})
   end
 
   ## Callbacks
@@ -65,7 +65,7 @@ defmodule Todo.Server do
   end
 
   defp via_tuple(todo_list_name) do
-    {:via, Todo.ProcessRegistry, {Todo.Server, todo_list_name}}
+    {:via, :gproc, {:n, :l, {__MODULE__, todo_list_name}}}
   end
 
   defp persist(todo_list) do
